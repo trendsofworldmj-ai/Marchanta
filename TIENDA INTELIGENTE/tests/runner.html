@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Tienda Inteligente - Test Runner</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background: #f8fafc; color: #0f172a; }
+  h1 { margin-bottom: 8px; }
+  .summary { padding: 12px 18px; border-radius: 8px; font-weight: bold; margin-bottom: 20px; font-size: 1.1rem; }
+  .pass { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+  .fail { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+  .item { padding: 8px 12px; margin-bottom: 6px; border-radius: 6px; background: #fff; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; }
+  .item.ok { border-left: 4px solid #22c55e; }
+  .item.err { border-left: 4px solid #ef4444; background: #fff5f5; }
+  .err-msg { color: #dc2626; font-size: 0.85rem; margin-top: 4px; font-family: monospace; }
+  #test-raw { display: block; font-family: monospace; background: #1e293b; color: #f8fafc; padding: 16px; border-radius: 8px; white-space: pre-wrap; margin-top: 20px; }
+</style>
+</head>
+<body>
+<h1>🧪 Suite de Verificación Automática</h1>
+<p>Verificación de reglas contables, inventario PEPS/FEFO, ventas, caja, catálogo y persistencia.</p>
+
+<div id="summary" class="summary">Ejecutando pruebas...</div>
+<div id="results"></div>
+
+<pre id="test-raw"></pre>
+
+<script src="../core.js"></script>
+<script src="../db.js"></script>
+<script src="../sync.js"></script>
+<script src="test-suite.js"></script>
+<script>
+(function() {
+  var runner = TiendaTests.createTestRunner();
+  var outcome = runner.runAll();
+
+  var sumEl = document.getElementById('summary');
+  var resEl = document.getElementById('results');
+  var rawEl = document.getElementById('test-raw');
+
+  var statusClass = outcome.failed === 0 ? 'pass' : 'fail';
+  var statusText = outcome.failed === 0 
+    ? '✅ TODAS LAS PRUEBAS PASARON (' + outcome.passed + '/' + outcome.total + ' pruebas exitosas)'
+    : '❌ HUBO FALLOS (' + outcome.failed + ' fallidas de ' + outcome.total + ')';
+
+  sumEl.className = 'summary ' + statusClass;
+  sumEl.textContent = statusText;
+
+  var html = '';
+  var rawLines = [
+    '=== TIENDA INTELIGENTE TEST RUNNER ===',
+    'Total: ' + outcome.total + ' | Pasaron: ' + outcome.passed + ' | Fallaron: ' + outcome.failed,
+    '--------------------------------------'
+  ];
+
+  outcome.results.forEach(function(r, idx) {
+    if (r.ok) {
+      html += '<div class="item ok"><span>✔ ' + r.name + '</span><strong style="color:#166534">PASÓ</strong></div>';
+      rawLines.push('[PASS] ' + r.name);
+    } else {
+      html += '<div class="item err"><div><span>✖ ' + r.name + '</span><div class="err-msg">' + r.error + '</div></div><strong style="color:#991b1b">FALLÓ</strong></div>';
+      rawLines.push('[FAIL] ' + r.name + ' -> ' + r.error);
+    }
+  });
+
+  rawLines.push('--------------------------------------');
+  rawLines.push(outcome.failed === 0 ? 'STATUS: SUCCESS' : 'STATUS: FAILURE');
+
+  resEl.innerHTML = html;
+  rawEl.textContent = rawLines.join('\n');
+})();
+</script>
+</body>
+</html>
